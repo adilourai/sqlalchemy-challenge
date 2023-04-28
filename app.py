@@ -53,7 +53,25 @@ def welcome():
 
 @app.route("/api/v1.0/precipitation")
 def precip():
-    return 'hello'
+# Design a query to retrieve the last 12 months of precipitation data and plot the results. 
+# Starting from the most recent data point in the database. 
+    recent_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first().date
+
+# Calculate the date one year from the last date in data set.
+    one_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+
+# Perform a query to retrieve the data and precipitation scores
+    precip_data = session.query(Measurement.date, Measurement.prcp).\
+        filter(Measurement.date >= one_year).order_by(Measurement.date).all()
+    
+    all_precip_data = []
+    for date, prcp in precip_data:
+        precip_dict = {}
+        precip_dict['date'] = date
+        precip_dict['precip'] = prcp
+        all_precip_data.append(precip_dict)
+
+    return jsonify(all_precip_data)
 
 @app.route("/api/v1.0/stations")
 def stations():
@@ -91,7 +109,6 @@ def temps():
         temp_dict['date'] = date
         temp_dict['temp'] = tobs
         all_temps.append(temp_dict)
-    # list(np.ravel(temp_data))
     
     return jsonify(all_temps)
 

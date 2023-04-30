@@ -150,12 +150,14 @@ def temp_range_start(start):
 # Create our session (link) from Python to the DB
     session = Session(engine)
 
-#Calculate most recent date in database
+# Calculate most recent date in database
     recent_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first().date
 
+# Query temperature data (max, min, mean) for date range starting at user's inputted start date
     start_temp_data = session.query(func.max(Measurement.tobs), func.min(Measurement.tobs), func.avg(Measurement.tobs)).\
     filter(Measurement.date >= start).all()
 
+# Create a list and save the temperature data in dictionaries within the list
     start_temps = []
     for max_temp, min_temp, avg_temp in start_temp_data:
         temp_dict = {}
@@ -166,18 +168,23 @@ def temp_range_start(start):
         temp_dict['avg temp'] = round(avg_temp,1)
         start_temps.append(temp_dict)
 
+# Return a JSONified version of the list of dictionaries
     return jsonify(start_temps)
 
+# Close the session
     session.close()
 
+# Route to provide max, min, and avg temperature data over a user-defined period with inputted start/end dates
 @app.route("/api/v1.0/<start>/<end>")
 def temp_range_start_end(start, end):
 # Create our session (link) from Python to the DB
     session = Session(engine)
-    
+
+# Query temperature data (max, min, mean) for user's inputted date range
     start_end_temp_data = session.query(func.max(Measurement.tobs), func.min(Measurement.tobs), func.avg(Measurement.tobs)).\
     filter(Measurement.date.between(start, end)).all()
 
+# Create a list and save the temperature data in dictionaries within the list
     start_end_temps = []
     for max_temp, min_temp, avg_temp in start_end_temp_data:
         temp_dict = {}
@@ -188,9 +195,12 @@ def temp_range_start_end(start, end):
         temp_dict['avg temp'] = round(avg_temp,1)
         start_end_temps.append(temp_dict)
 
+# Return a JSONified version of the list of dictionaries
     return jsonify(start_end_temps)
 
+# Close the session
     session.close()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
